@@ -1,0 +1,28 @@
+{
+   "type": "mssql",
+   "host": "192.168.1.2",
+   "port": 1436,
+   "username": "sa",
+   "password": "CmSql2kXVI",
+   "database": "PRUEBAS_TYPEORM",
+   "synchronize": true,
+   "logging": false,
+   "options": {
+      "instanceName": "SQL2012",
+      "encrypt": false
+   },
+   "entities": [
+      "src/entity/**/*.ts"
+   ],
+   "migrations": [
+      "src/migration/**/*.ts"
+   ],
+   "subscribers": [
+      "src/subscriber/**/*.ts"
+   ],
+   "cli": {
+      "entitiesDir": "src/entity",
+      "migrationsDir": "src/migration",
+      "subscribersDir": "src/subscriber"
+   }
+}
