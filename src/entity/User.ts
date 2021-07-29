@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Unique, CreateDateColumn, Updat
 import { MinLength, IsNotEmpty, IsEmail } from "class-validator";
 import * as bcrypt from 'bcryptjs';
 
-//TODO VALIDATE EMAIL
+
 @Entity()
 @Unique(['username'])
 class User {
@@ -12,10 +12,13 @@ class User {
 
     @Column()
     @MinLength(6)
+    @IsEmail()
+    @IsNotEmpty()
     username: string;
 
     @Column()
     @MinLength(6)
+    @IsNotEmpty()
     password: string;
 
     @Column()
