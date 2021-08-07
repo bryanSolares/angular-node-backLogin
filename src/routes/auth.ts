@@ -6,5 +6,7 @@ const routes = Router();
 
 routes.post("/login", AuthController.login);
 routes.post("/change-password", [checkJwt], AuthController.changePassword);
+routes.put("/forgot-password", AuthController.forgorPassword);
+routes.put("/new-password", AuthController.createNewPassword);
 
 export default routes;

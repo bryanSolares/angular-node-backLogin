@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import { MinLength, IsNotEmpty, IsEmail } from "class-validator";
+import { MinLength, IsNotEmpty, IsEmail, IsOptional } from "class-validator";
 import * as bcrypt from 'bcryptjs';
 
 
@@ -29,9 +29,14 @@ class User {
     @CreateDateColumn()
     createdAt: Date;
 
+
     @Column()
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column()
+    @IsOptional()
+    resetToken: string;
 
     hashPassword(): void {
         const salt = bcrypt.genSaltSync(10);

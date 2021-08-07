@@ -9,11 +9,12 @@ class UserController {
 
     static getAll = async (req: Request, res: Response) => {
         const userRepository = getRepository(User);
+        let users;
 
         try {
-            const users = await userRepository.find();
+            users = await userRepository.find({ select: ['userId', 'username', 'role'] });
             if (users.length > 0) {
-                res.send(users);
+                res.json(users);
             } else {
                 return res.status(404).json({ message: "No results." });
             }
@@ -29,8 +30,8 @@ class UserController {
         const userRepository = getRepository(User);
 
         try {
-            const user = await userRepository.findOneOrFail(id);
-            res.send(user);
+            const user = await userRepository.findOneOrFail(id, { select: ['userId', 'username', 'role'] });
+            res.json(user);
         } catch (error) {
             console.error(error);
             return res.status(404).json({ message: "Not Result." });
@@ -44,6 +45,7 @@ class UserController {
         user.username = username;
         user.password = password;
         user.role = role;
+        user.resetToken = '';
 
         const validationOptions = { validationError: { target: false, value: false } };
         const errors = await validate(user, validationOptions);
@@ -85,7 +87,7 @@ class UserController {
             }
 
             await userRepository.save(user);
-            res.send('User updated.');
+            res.json({ message: 'User updated.' });
         } catch (error) {
             console.error(error);
             return res.status(401).json({ message: "User already in use" });
@@ -101,7 +103,7 @@ class UserController {
             user = await userRepository.findOneOrFail(id);
 
             await userRepository.remove(user);
-            res.status(201).send('User removed.');
+            res.status(201).json({ message: 'User removed.' });
         } catch (error) {
             console.error(error);
             return res.status(404).json({ message: "User not found" });
