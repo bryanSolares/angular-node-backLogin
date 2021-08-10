@@ -8,5 +8,6 @@ routes.post("/login", AuthController.login);
 routes.post("/change-password", [checkJwt], AuthController.changePassword);
 routes.put("/forgot-password", AuthController.forgorPassword);
 routes.put("/new-password", AuthController.createNewPassword);
+routes.post("/refresh-token", AuthController.refreshToken);
 
 export default routes;

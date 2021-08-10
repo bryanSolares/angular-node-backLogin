@@ -4,6 +4,7 @@ import User from '../entity/User';
 import * as jwt from 'jsonwebtoken';
 import config from "../config/config";
 import { validate } from 'class-validator';
+import { transporter } from "../config/mailer";
 
 class AuthController {
     static login = async (req: Request, res: Response) => {
@@ -21,7 +22,12 @@ class AuthController {
                 return res.status(401).json({ message: "Username or Password incorrects!" })
             }
             const token = jwt.sign({ userId: user.userId, username: user.username }, config.jwtSecret, { expiresIn: '1h' });
-            return res.json({ message: 'Bienvenido', token, userId: user.userId, role: user.role });
+            const refresToken = jwt.sign({ userId: user.userId, username: user.username }, config.jwtSecretRefresh, { expiresIn: '1h' });
+
+            user.refreshToken = refresToken;
+            await userRepository.save(user);
+
+            return res.json({ message: 'Bienvenido', token, refresToken, userId: user.userId, role: user.role });
 
         } catch (error) {
             return res.status(404).json({ message: "User not found", error })
@@ -88,15 +94,23 @@ class AuthController {
             let verificationLink;
             let emailStatus = 'OK';
 
-            const token = jwt.sign({ userId: user.userId, username: user.username, role: user.role }, config.jwtSecretReset, { expiresIn: '1h' });
-            verificationLink = `http://localhost:3000/auth/new-password/${token}`;
+            const token = jwt.sign({ userId: user.userId, username: user.username, role: user.role }, config.jwtSecretReset, { expiresIn: '10m' });
+            verificationLink = `http://localhost:4200/auth/new-password/${token}`;
             user.resetToken = token;
 
             //TODO SEND EMAIL
-
+            await transporter.sendMail({
+                from: '"Forgot password 👻" <guitarraviva18@gmail.com>',
+                to: user.username,
+                subject: "Hello Forgot password 👻",
+                html: `
+                <b>Please click on the following link, or paste this into your browser to complete the process:</b>
+                <a href="${verificationLink}">${verificationLink}</a>
+                `,
+            })
 
             await userRepository.save(user);
-            res.json({ message: msg, info: emailStatus, verificationLink })
+            res.json({ message: msg, info: emailStatus })
 
         } catch (error) {
             return res.status(401).json({ message: "Somenthing goes wrong!", error });
@@ -141,6 +155,27 @@ class AuthController {
         }
 
         res.json({ message: 'Congratulation Changed Password!' })
+    }
+
+    static refreshToken = async (req: Request, res: Response) => {
+        const refreshToken = req.headers['refresh'] as string;
+        if (!refreshToken) {
+            return res.status(400).json({ message: "All the fields are required" });
+        }
+
+        const userRepository = getRepository(User);
+        let user: User;
+
+        try {
+            const verifyResult = jwt.verify(refreshToken, config.jwtSecretRefresh);
+            const { username } = verifyResult as User;
+            user = await userRepository.findOneOrFail({ where: { username } });
+
+            const token = jwt.sign({ userId: user.userId, username: user.username }, config.jwtSecret, { expiresIn: '1h' });
+            res.json({ message: 'ok token refresh', token });
+        } catch (error) {
+            return res.status(401).json({ message: "Somenthing goes wrong!", error });
+        }
     }
 }
 

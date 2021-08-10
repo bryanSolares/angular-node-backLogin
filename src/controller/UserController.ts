@@ -46,6 +46,7 @@ class UserController {
         user.password = password;
         user.role = role;
         user.resetToken = '';
+        user.refreshToken = '';
 
         const validationOptions = { validationError: { target: false, value: false } };
         const errors = await validate(user, validationOptions);
